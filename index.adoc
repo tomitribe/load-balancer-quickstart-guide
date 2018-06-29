@@ -1,0 +1,209 @@
+:encoding: UTF-8
+:linkattrs:
+:sectlink:
+:sectanchors:
+:sectid:
+:imagesdir: media
+:leveloffset: 1
+
+= Load Balancer - Quickstart Guide
+Time: 15 minutes
+
+Learning objectives
+
+* What are and how to create an API connection.
+* Add Round Robin load balance to an API connection.
+* Create a Route that uses the Load Balance API connection.
+* Test the Route to validate the Load Balance API connection accessing the microservices.
+
+Prerequisites
+
+* Docker installed and the daemon is running on your computer.
+* Internet connection.
+* Curl installed on your computer.
+
+
+=== 1. Run the demo Microservices
+In order to run our demo microservices we need to open a terminal and execute the following command:
+```
+docker run -e MSG=RED   -d -p 3333:9090 --name red_endpoint   tomitribedev/sample-endpoint
+docker run -e MSG=BLUE  -d -p 4444:9090 --name blue_endpoint  tomitribedev/sample-endpoint
+docker run -e MSG=GREEN -d -p 5555:9090 --name green_endpoint tomitribedev/sample-endpoint
+```
+
+We can validate that our microservices are up and running by executing the following commands:
+
+```
+$ curl  http://localhost:3333/color
+RED
+$ curl  http://localhost:4444/color
+BLUE
+$ curl  http://localhost:5555/color
+GREEN
+```
+
+
+=== 2. Run Tribestream API Gateway (TAG)
+We can reuse the TAG docker container we created from the Tribe quickstart guide. To start TAG execute the following command:
+
+```
+docker start tag
+```
+
+* If this is the first time you run TAG, open a terminal execute the following command according to your operating
+  system:
+    ** For linux:
+	`docker run --net="host" -de LICENSE=accept --name tag tomitribe/tribestream-api-gateway
+ tomitribe/tribestream-api-gateway`
+
+    ** For OS X:
+     `docker run -de LICENSE=accept --name tag -p 8080:8080  tomitribe/tribestream-api-gateway`
+
+To see the TAG starting process log you can execute the following command:
+```
+docker logs -f tag
+```
+
+TAG is ready when you see the following message on the TAG log:
+
+```
+INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-bio-8080"]
+INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["ajp-bio-8009"]
+INFO [main] org.apache.catalina.startup.Catalina.start Server startup in 18348 ms
+```
+
+
+=== 3.  Login into TAG
+Open a browser and navigate to: `http://localhost:8080/tag`
+
+Login into the TAG dashboard using the following credentials: username: `admin`, password: `admin`.
+If this is not the first time you are login into TAG, you may be redirected straight to the `Dashboard` page.
+
+image::login.gif[]
+
+
+
+=== 4. Load Balance your microservices
+==== 4.1 Create an API Connection
+`Connections` is the term Tribestream API Gateway uses to describe and configure external resources like Databases,
+Ldap servers and API’s.  The following instructions will provide you the steps need it to create and `API connection`
+to describe and configure the access to the three microservices we previously started.
+
+From the TAG `Dashboard` page click on the `Connections` option to navigate to the `Connections` page, click the `+`
+button on the upper right side and select `API Connection`.
+
+image::open-new-connections.gif[]
+
+Create a new `API Connection`  with the following data according to your Operating System and then click the `Save` button.
+
+* Name: load balance api connection
+* Location:
+    ** For linux:  `http://localhost:3333`
+    ** For OsX: `http://host.docker.internal:3333`
+
+
+
+==== 4.2 Add Load Balancing to an API Connection
+In the `Load Balance API` Connection detail page, click the `…` button and select `Add Load Balancing`.
+
+image::open-load-balancing.png["", 600,409 ]
+
+The `Load Balancing` section appears. To add the remaining two microservice endpoints location, click the the Host `+`
+button and add the two locations, then click the `save` button located at the top right corner of the screen:
+
+    * For linux: `http://localhost:4444 and http://localhost:5555`
+    * For OsX: `http://host.docker.internal:4444 and http://host.docker.internal:5555`
+
+image::add-loadbalance-endpoints.png["", 600,409 ]
+
+
+
+==== 4.3 Create a Route to reference the Load Balance API Connection
+The mechanism used by the Tribestream API Gateway to orchestrate and secure the traffic to and from API endpoints is called `Route`.
+
+For the purpose of this guide, you need to create `the Load Balance Route` in order to use the Load Balancer created
+in the previous step via the `API Connection`.
+
+From the `Dashboard` page, click the `Route` link and then from the `Routes` page click the `+` button on the upper right
+side and select` Mod_Rewrite Route`.
+
+image::open-new-route.gif[]
+
+Create a new Route with the following data and click `Save`:
+
+* Name: `Load Balancer Route`
+* Mod_Rewrite: `RewriteRule "^/?test-load-balancer$" "%{API:load balance api connection}/color/" [P,NE]`
+
+image::create-route.png["", 600,409 ]
+
+
+
+=== 5. Test the Load Balancer Route
+
+To successfully test the load balance microservice you can execute the following command three times and see how the
+microservices are effectively balanced:
+
+```
+$ curl http://localhost:8080/test-load-balancer
+BLUE
+$ curl http://localhost:8080/test-load-balancer
+GREEN
+$ curl http://localhost:8080/test-load-balancer
+RED
+```
+
+You can now shutdown one of the microservice by execute the following command:
+```
+docker stop red_endpoint
+```
+
+Run again  three times and see how the microservices are effectively balanced:
+```
+$ curl http://localhost:8080/test-load-balancer
+BLUE
+$ curl http://localhost:8080/test-load-balancer
+GREEN
+$ curl http://localhost:8080/test-load-balancer
+BLUE
+```
+
+You can start up again the red_endopint Microservice:
+```
+docker start red_endpoint
+```
+
+=== 6. Disabling a specific microservice via TAG Load Balancer UI
+You can also deactivate  one of the three microservices using the Load Balancing section on the  `load balance api connection`.
+
+image::disable-one-endpoint.gif[]
+
+Just like in the previous section, now you can run again three times the curl command pointing to
+`http://localhost:8080/test-load-balancer` and see how the two microservices are effectively balanced now that one of
+the three was deactivated via the TAG UI.
+
+
+
+
+=== 7. Stop Tribestream API Gateway
+Since both the TAG and the microservices were created with a specific container name, you can now stop the
+containers from the command line with the following command.
+
+Stopping TAG
+```
+docker stop tag
+```
+
+Stopping the microservices
+```
+docker stop red_endpoint
+docker stop blue_endpoint
+docker stop green_endpoint
+```
+
+=== Summary
+Congratulations! in this module you learned about:
+
+* What are and how to create an API connection
+* Add Round Robin load balance to an API connection
+* Create a Route that uses the Load Balance API connection
+* Test the Route to validate the Load Balance API connection accessing the microservices.
