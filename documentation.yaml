@@ -1,0 +1,9 @@
+%YAML 1.2
+---
+documentation:
+
+  - doc_root: 'index.adoc'
+    name: 'Examples'
+    display_name: 'Load balancing a microservice'
+    public_path: 'en/api-gateway/load-balancer-quickstart-guide'
+    single_page: 'true'
