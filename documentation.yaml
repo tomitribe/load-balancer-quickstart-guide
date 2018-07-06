@@ -4,6 +4,6 @@ documentation:
 
   - doc_root: 'index.adoc'
     name: 'Examples'
-    display_name: 'Load balancing a microservice'
-    public_path: 'en/api-gateway/load-balancer-quickstart-guide'
+    display_name: 'Load Balance Microservices'
+    public_path: 'en/api-gateway/load-balance-microservices'
     single_page: 'true'
