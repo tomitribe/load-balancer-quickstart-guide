@@ -6,7 +6,7 @@
 :imagesdir: media
 :leveloffset: 1
 
-= Load Balancer - Quickstart Guide
+= Load Balance Microservices
 Time: 15 minutes
 
 Learning objectives
