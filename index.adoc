@@ -19,7 +19,6 @@ Learning objectives
 Prerequisites
 
 * Docker installed and the daemon is running on your computer.
-* Internet connection.
 * Curl installed on your computer.
 
 
@@ -100,7 +99,7 @@ image::api-connection-diagram.png[]
 Ldap servers and API’s.  The following instructions will provide you the steps need it to create and `API connection`
 to describe and configure the access to the three microservices we previously started.
 
-From the TAG `Dashboard` page click on the `Connections` option to navigate to the `Connections` page, click the `+`
+From the TAG `Dashboard` page click on the `Connections` option to navigate to the `Connections` page, click the [big]`+`
 button on the upper right side and select `API Connection`.
 
 image::open-new-connections.gif[]
@@ -119,7 +118,7 @@ In the `Load Balance API` Connection detail page, click the `…` button and sel
 
 image::open-load-balancing.png["", 600,409 ]
 
-The `Load Balancing` section appears. To add the remaining two microservice endpoints location, click the the Host `+`
+The `Load Balancing` section appears. To add the remaining two microservice endpoints location, click the the Host [big]`+`
 button and add the two locations, then click the `save` button located at the top right corner of the screen:
 
     * For linux: `http://localhost:4444 and http://localhost:5555`
@@ -137,7 +136,7 @@ The mechanism used by the Tribestream API Gateway to orchestrate and secure the 
 For the purpose of this guide, you need to create a Route in order to use the Load Balancer created
 in the previous step via the `API Connection`.
 
-From the `Dashboard` page, click the `Route` link and then from the `Routes` page click the `+` button on the upper right
+From the `Dashboard` page, click the `Route` link and then from the `Routes` page click the [big]`+` button on the upper right
 side and select` Mod_Rewrite Route`.
 
 image::open-new-route.gif[]
